@@ -1,0 +1,112 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage[margin=1.0 in]{geometry}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{pdfpages}
+\date{\today}
+\author{Adam Glick}
+\title{NE 255 HW 6}
+\usepackage{datetime}
+\usepackage{listings, textcomp}				
+\definecolor{listinggray}{gray}{0.9}
+\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
+\lstset{
+%	backgroundcolor=\color{lbcolor},
+	tabsize=4,
+	language=matlab,
+        basicstyle=\ttfamily,
+        upquote=true,
+        aboveskip={1.5\baselineskip},
+        columns=fixed,
+        showstringspaces=false,
+        extendedchars=true,
+        breaklines=true,
+        prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+        frame=single,
+        showtabs=false,
+        showspaces=false,
+        showstringspaces=false,
+        identifierstyle=\ttfamily,
+        keywordstyle=\color[rgb]{0,0,1},
+        commentstyle=\color[rgb]{0.133,0.545,0.133},
+        stringstyle=\color[rgb]{0.627,0.126,0.941},
+}
+
+\begin{document}
+\maketitle
+\noindent
+1. (30 points) Using the direct inversion of CDF sampling method, derive sampling algo- rithms for\\
+\newline
+(a) The neutron direction in 3D if the neutron source is isotropic.\\
+\newline
+Direct Inversion Algorithm\\
+\newline
+\begin{eqnarray}
+\hat{x} &=& F^{-1} (\xi)\\
+\bar{\Omega} &=& \Omega _x \hat{x} + \Omega _y \hat{y} + \Omega _z \hat{z}\\
+\frac{d \Omega}{4\pi} &=& \frac{\sin (\theta) d\theta d\phi}{4 \pi} = \frac{-d(\cos (\theta)) d\phi}{4 \pi} = \frac{-d \mu d\phi}{4\pi}\\
+f(\bar{\Omega}) &=& f_1 (\mu) f_2 (\phi) = \frac{1}{2} \frac{1}{2\pi}\\
+F_1 (\mu) &=& \int\limits _{-1}^{\mu} f_1 (\mu ') d \mu ' = \frac{1}{2} (\mu + 1) = \xi _1 \Longrightarrow \boxed{ \mu = 2 \xi _1 - 1}\\
+F_1 (\phi) &=& \int\limits _0^{\phi} f_2 (\phi ') d\phi ' = \frac{\phi}{2 \pi} = \xi _2 \Longrightarrow \boxed{ \phi = 2\pi \xi _2 }
+\end{eqnarray}
+\newline
+(b) The distance to the next collision in the direction of neutron motion if the neutron is in the center of the spherical volume that consists of three concentric layers with radii R1, R2, and R3, each made of different materials with total cross sections Σt1, Σt2, and Σt3, respectively.\\
+\newline
+\begin{eqnarray}
+n &=& \Sigma _t (s) s \Longrightarrow dn = \Sigma _t (s) ds\\
+n_b &=& \Sigma _t (R_1) R_1\\
+n_c &=& -\ln (1 - \xi )
+\end{eqnarray} \\
+To start the algorithm, we first transform all distances into units of mean free path. This helps us deal with inhomogeneous materials and boundaries between materials. The value $n_b$ represents the boundary mean free path length, which is a discrete value and not random. However we generate the collision distance by using random sampling where $\xi$ is a randomly generated value between 0 and 1. The probability density function of the particle, independent of the material is\\
+\begin{eqnarray}
+p _c (n_c) dn &=& e^{-n_c} dn_c
+\end{eqnarray}
+The algorithm to find out the distance to the next particle interaction is then:\\
+\newline
+
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\SetAlgoLined
+\SetArgSty{textrm}
+\BlankLine
+ i = 0 \% set up a counter\\
+ {
+\While{n_b < n_c}{
+    n_c = n_c - n_b \text{            } \% \text{This keeps going if the collision distance is larger than the boundary} \\
+    n_b = \Sigma _t (R_i) R_i \text{   }  \% \text{Calculate the second boundary distance in mean free path}\\
+    i &= i+1
+}\\
+\text{display}(i) \indent &\% \text{This will tell which region the particle collided in}\\
+\text{display}(n_c) \indent &\% \text{This will tell where in the region the particle collided}
+\end{algorithm}\\
+\newline
+\noindent (c) The type of collision if it is assumed that the neutron can have both elastic and in- elastic scattering, and can be absorbed in fission or (n,gamma) capture interactions. Assume monoenergetic neutron transport.
+\newline
+\begin{eqnarray}
+\Sigma _t &=& \Sigma _{elastic} + \Sigma _{inelastic} + \Sigma _{(n,2n)} + \Sigma _{(n, \gamma)}\\
+&=& \sum \limits _{x = 1}^{R} \Sigma _{x,j}\\
+p_x &=& \frac{\Sigma _{x,j}}{\Sigma _{t,j}}\\
+dN_x &=& N_0 p_x \Sigma _x e^{- \Sigma _x x} dx
+\end{eqnarray} \\
+\newline
+2. (20 points) Use a rejection Monte Carlo method to evaluate π = 3.14159: \\
+• from: $\pi = 4 \int \limits _0^1 \sqrt{1−x^2}dx$\\
+• from: $\pi = 4 \int \limits _0^1 \frac{1}{1 + x^2} dx$\\
+• Assuming that π = 3.14159 is exact, calculate the relative error for 10, 100, 1 000,
+and 10 000 samples.
+• What do you notice about the behavior of error as a function of number of trials?\\
+\newline
+\includepdf[pages={1}]{Sol2_1.pdf}
+\newline
+\includepdf[pages={1}]{Sol2_2.pdf} \\
+\newline
+It is important to notice that the more trials that are ran, the closer the estimation of pi converges to the actual value. It is also worth noting that since the values generated are random, it is possible that with a short number of trials we can potentially converge closer to the value of pi than for larger trials. The increase in the number of trials not only converges to the value of pi better than shorter numbers of trials, but the results produced from large number of trials are more consistent. If you run the 10 trial code multiple times it is very unlikely you get a similar error each run.\\
+\newline
+MATLAB Code:\\
+\newline
+\lstinputlisting{NE255_HW6_2.m}\\
+\newline
+\lstinputlisting{NE255_HW6_2_2.m}
+\end{document}
